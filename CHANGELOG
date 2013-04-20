@@ -1,6 +1,8 @@
 Giraph Change Log
 
 Release 1.0.1 - unreleased
+  GIRAPH-647: Update HiveIO to 0.8 (nitay)
+
   GIRAPH-636: Initialize compute OutEdges directly from input OutEdges
   (majakabiljo)
 
