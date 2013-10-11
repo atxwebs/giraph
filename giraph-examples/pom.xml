@@ -23,7 +23,7 @@ under the License.
   <parent>
     <groupId>org.apache.giraph</groupId>
     <artifactId>giraph-parent</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0-fb-20131011-012210</version>
   </parent>
   <artifactId>giraph-examples</artifactId>
   <packaging>jar</packaging>
@@ -432,7 +432,7 @@ under the License.
     <dependency>
       <groupId>org.apache.giraph</groupId>
       <artifactId>giraph-core</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>1.1.0-fb-20131011-012210</version>
       <type>test-jar</type>
     </dependency>
 
