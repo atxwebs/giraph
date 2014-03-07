@@ -29,7 +29,7 @@ under the License.
   <groupId>org.apache.giraph</groupId>
   <artifactId>giraph-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.1.0-fb-20140307-225125</version>
+  <version>1.1.0-SNAPSHOT</version>
 
   <name>Apache Giraph Parent</name>
   <url>http://giraph.apache.org/</url>
@@ -40,7 +40,7 @@ under the License.
     <connection>scm:git:http://git-wip-us.apache.org/repos/asf/giraph.git</connection>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/giraph.git</developerConnection>
     <url>https://git-wip-us.apache.org/repos/asf/giraph.git</url>
-    <tag>giraph-parent-1.1.0-fb-20140307-225125</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <ciManagement>
