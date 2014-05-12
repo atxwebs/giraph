@@ -35,6 +35,9 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -82,6 +85,13 @@ public class ServerData<I extends WritableComparable,
   private final AllAggregatorServerData allAggregatorData;
   /** Service worker */
   private final CentralizedServiceWorker<I, V, E> serviceWorker;
+
+  /** Store for current messages to this worker */
+  private volatile List<Writable> currentWorkerMessages =
+      Collections.synchronizedList(new ArrayList<Writable>());
+  /** Store for message to this worker for next superstep */
+  private volatile List<Writable> incomingWorkerMessages =
+      Collections.synchronizedList(new ArrayList<Writable>());
 
   /**
    * Constructor.
@@ -163,6 +173,10 @@ public class ServerData<I extends WritableComparable,
             messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
     incomingMessageStore =
         messageStoreFactory.newStore(conf.getOutgoingMessageValueFactory());
+
+    currentWorkerMessages = incomingWorkerMessages;
+    incomingWorkerMessages =
+        Collections.synchronizedList(new ArrayList<Writable>());
   }
 
   /**
@@ -200,5 +214,13 @@ public class ServerData<I extends WritableComparable,
    */
   public CentralizedServiceWorker<I, V, E> getServiceWorker() {
     return this.serviceWorker;
+  }
+
+  public List<Writable> getCurrentWorkerMessages() {
+    return currentWorkerMessages;
+  }
+
+  public List<Writable> getIncomingWorkerMessages() {
+    return incomingWorkerMessages;
   }
 }

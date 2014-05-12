@@ -22,6 +22,7 @@ import org.apache.giraph.bsp.BspService;
 import org.apache.giraph.bsp.CentralizedServiceMaster;
 import org.apache.giraph.bsp.CentralizedServiceWorker;
 import org.apache.giraph.comm.messages.MessageStore;
+import org.apache.giraph.comm.netty.NettyWorkerClientRequestProcessor;
 import org.apache.giraph.conf.GiraphConstants;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.scripting.ScriptLoader;
@@ -432,8 +433,14 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
     serviceWorker.prepareSuperstep();
 
     serviceWorker.getWorkerContext().setGraphState(graphState);
+    serviceWorker.getWorkerContext().setupSuperstep(
+        new NettyWorkerClientRequestProcessor<>(
+            context, getConf(), serviceWorker),
+        serviceWorker.getWorkerInfoList(),
+        serviceWorker.getWorkerInfo());
     GiraphTimerContext preSuperstepTimer = wcPreSuperstepTimer.time();
-    serviceWorker.getWorkerContext().preSuperstep();
+    serviceWorker.getWorkerContext().preSuperstep(
+        serviceWorker.getServerData().getCurrentWorkerMessages());
     preSuperstepTimer.stop();
     context.progress();
 

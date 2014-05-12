@@ -18,20 +18,40 @@
 
 package org.apache.giraph.worker;
 
+import org.apache.giraph.comm.WorkerClientRequestProcessor;
+import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.graph.GraphState;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * WorkerContext allows for the execution of user code
  * on a per-worker basis. There's one WorkerContext per worker.
  */
 @SuppressWarnings("rawtypes")
-public abstract class WorkerContext implements WorkerAggregatorUsage {
+public abstract class WorkerContext
+    extends DefaultImmutableClassesGiraphConfigurable
+    implements WorkerAggregatorUsage {
+  /** Class logger */
+  private static final Logger LOG = Logger.getLogger(WorkerContext.class);
+
   /** Global graph state */
   private GraphState graphState;
   /** Worker aggregator usage */
   private WorkerAggregatorUsage workerAggregatorUsage;
+
+  /** Request processor, used to send messages to other workers */
+  private WorkerClientRequestProcessor workerClientRequestProcessor;
+  /** Sorted list of other participating workers*/
+  private List<WorkerInfo> workerList;
+  /** Index of this worker within workerList */
+  private int myWorkerIndex;
 
   /**
    * Set the graph state.
@@ -40,6 +60,30 @@ public abstract class WorkerContext implements WorkerAggregatorUsage {
    */
   public void setGraphState(GraphState graphState) {
     this.graphState = graphState;
+  }
+
+  /**
+   * Setup superstep classes
+   *
+   * @param workerClientRequestProcessor Request processor
+   * @param unsortedWorkerList List of other participating workers, unsorted
+   * @param myWorkerInfo Info for this worker
+   */
+  public void setupSuperstep(
+      WorkerClientRequestProcessor workerClientRequestProcessor,
+      List<WorkerInfo> unsortedWorkerList, WorkerInfo myWorkerInfo) {
+    this.workerClientRequestProcessor = workerClientRequestProcessor;
+    workerList = new ArrayList<>(unsortedWorkerList);
+    Collections.sort(workerList, new Comparator<WorkerInfo>() {
+      @Override
+      public int compare(WorkerInfo info1, WorkerInfo info2) {
+        return Integer.compare(info1.getTaskId(), info2.getTaskId());
+      }
+    });
+    myWorkerIndex = 0;
+    while (!workerList.get(myWorkerIndex).equals(myWorkerInfo)) {
+      myWorkerIndex++;
+    }
   }
 
   /**
@@ -76,6 +120,44 @@ public abstract class WorkerContext implements WorkerAggregatorUsage {
    * superstep starts.
    */
   public abstract void preSuperstep();
+
+  /**
+   * Execute user code.
+   * This method is executed once on each Worker before each
+   * superstep starts.
+   *
+   * @param messagesFromWorkers Messages from other workers
+   */
+  public void preSuperstep(List<Writable> messagesFromWorkers) {
+    if (!messagesFromWorkers.isEmpty()) {
+      LOG.warn("preSuperstep: Ignoring messages from other workers");
+    }
+    preSuperstep();
+  }
+
+  /**
+   * Get number of workers
+   *
+   * @return Number of workers
+   */
+  public int getWorkerCount() {
+    return workerList.size();
+  }
+
+  public int getMyWorkerIndex() {
+    return myWorkerIndex;
+  }
+
+  /**
+   * Send message to another worker
+   *
+   * @param message Message to send
+   * @param workerIndex Index of the worker to send the message to
+   */
+  public void sendMessageToWorker(Writable message, int workerIndex) {
+    workerClientRequestProcessor.sendMessageToWorker(
+        workerList.get(workerIndex), message);
+  }
 
   /**
    * Execute user code.

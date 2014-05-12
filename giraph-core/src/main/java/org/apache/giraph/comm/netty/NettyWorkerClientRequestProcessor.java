@@ -31,6 +31,7 @@ import org.apache.giraph.comm.ServerData;
 import org.apache.giraph.comm.WorkerClient;
 import org.apache.giraph.comm.WorkerClientRequestProcessor;
 import org.apache.giraph.comm.messages.MessageStore;
+import org.apache.giraph.comm.requests.SendMessageToWorker;
 import org.apache.giraph.comm.requests.SendPartitionCurrentMessagesRequest;
 import org.apache.giraph.comm.requests.SendPartitionMutationsRequest;
 import org.apache.giraph.comm.requests.SendVertexRequest;
@@ -206,6 +207,11 @@ public class NettyWorkerClientRequestProcessor<I extends WritableComparable,
     if (serviceWorker.getSuperstep() != BspService.INPUT_SUPERSTEP) {
       sendPartitionMessages(workerInfo, partition);
     }
+  }
+
+  @Override
+  public void sendMessageToWorker(WorkerInfo workerInfo, Writable data) {
+    doRequest(workerInfo, new SendMessageToWorker(data));
   }
 
   /**
