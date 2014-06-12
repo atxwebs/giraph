@@ -81,6 +81,14 @@ public interface WorkerClientRequestProcessor<I extends WritableComparable,
                             Partition<I, V, E> partition);
 
   /**
+   * Send message from this to another worker
+   *
+   * @param workerInfo Worker to send message to
+   * @param message Message to send
+   */
+  void sendMessageToWorker(WorkerInfo workerInfo, Writable message);
+
+  /**
    * Sends a request to the appropriate vertex range owner to add an edge
    *
    * @param vertexIndex Index of the vertex to get the request
